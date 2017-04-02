@@ -4,7 +4,11 @@ from selenium.webdriver.common.keys import Keys
 import time
 from dateutil.parser import parse
 import pandas as pd
+
+from sklearn.cluster import DBSCAN
+from sklearn.preprocessing import StandardScaler
 import numpy as np
+
 from bs4 import BeautifulSoup
 import matplotlib.pyplot as plt
 #%matplotlib inline
@@ -140,4 +144,33 @@ def scape_date_90(start_date,from_place,to_place,city_name):
 # TASK 3
 
 def task_3_dbscan(flight_data):
+
+    # Tried to pick a fairly stable epsilon, looking at minimal noise
+    X = StandardScaler().fit_transform(df[['Start_Date', 'Price']])
+    db = DBSCAN(eps=.15, min_samples=3).fit(X)
+
+    labels = db.labels_
+    clusters = len(set(labels))
+    unique_labels = set(labels)
+    colors = plt.cm.Spectral(np.linspace(0, 1, len(unique_labels)))
+
+    plt.subplots(figsize=(12, 8))
+
+    for k, c in zip(unique_labels, colors):
+        class_member_mask = (labels == k)
+        xy = X[class_member_mask]
+        plt.plot(xy[:, 0], xy[:, 1], 'o', markerfacecolor=c,
+                 markeredgecolor='k', markersize=14)
+
+    plt.title("Total Clusters: {}".format(clusters), fontsize=14, y=1.01)
+    df['dbscan_labels'] = db.labels_
+
+    df.head()
+    df.dbscan_labels.unique()
+    t = X[df.dbscan_labels == 1, :]
+    t.mean(axis=0)
+    df
+
+    # Return 5 Day period with lowest average price for clusters of more than 5
+    # Noise points given -1 DB value
 
