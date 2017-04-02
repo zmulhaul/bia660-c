@@ -173,4 +173,5 @@ def task_3_dbscan(flight_data):
 
     # Return 5 Day period with lowest average price for clusters of more than 5
     # Noise points given -1 DB value
-
+    if db.labels == -1:
+        return
